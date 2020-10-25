@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteRule ^account/valid_email$ controllers/auth/valid-email.php [NC,L]
+	RewriteRule ^account/valid_user$ controllers/auth/valid_user.php [NC,L]
+	RewriteRule ^account/register$ controllers/auth/register.php [NC,L]
+	RewriteRule ^account/recover$ controllers/auth/recover.php [NC,L]
+	RewriteRule ^account/login$ controllers/auth/login.php [NC,L]
+	RewriteRule ^account/list$ controllers/auth/list.php [NC,L]
+	RewriteRule ^account/auth$ controllers/auth/auth.php [NC,L]
+	# RewriteRule ^services$ controllers/services.php [NC,L]
+	# RewriteRule ^customers$ controllers/customers.php [NC,L]
+</IfModule>
+
+php_flag log_errors on
+php_value error_log error_log.txt
