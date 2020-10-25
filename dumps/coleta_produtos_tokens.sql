@@ -1,0 +1,53 @@
+-- MySQL dump 10.13  Distrib 5.7.29, for Linux (x86_64)
+--
+-- Host: localhost    Database: coleta_produtos
+-- ------------------------------------------------------
+-- Server version	5.7.29-0ubuntu0.18.04.1
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `tokens`
+--
+
+DROP TABLE IF EXISTS `tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tokens` (
+  `token` varchar(50) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `datetime` datetime NOT NULL,
+  `action` varchar(10) NOT NULL,
+  PRIMARY KEY (`token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tokens`
+--
+
+LOCK TABLES `tokens` WRITE;
+/*!40000 ALTER TABLE `tokens` DISABLE KEYS */;
+INSERT INTO `tokens` VALUES ('4072df6eb8e989fe7965cdd189e89043c99b99c8bca888e538',11,'2020-02-18 09:40:17','createcont'),('52880695595fe024fbe7f9ea50f14cf22386b3c0c1f69e3292',13,'2020-02-25 03:36:53','createcont'),('54fbc857b242ab64fbea5fe71c784a470a6b382f7eaf8298d8',10,'2020-02-18 09:38:34','createcont'),('5f94af2379148f69fe3c3d78a141bf588b525254895e42a29b',16,'2020-02-25 03:50:41','createcont'),('705675b33a69d91325d0b3a9b353cb202a7fe473d5ea3b628b',15,'2020-02-25 03:48:29','createcont'),('931a147902d06089529bb6a6074413a3d0eff2e5059a8af53d',14,'2020-02-25 03:43:20','createcont'),('a9559eeef848c9c47a01459965acf7178adaf5424c190dc66d',12,'2020-02-25 03:35:16','createcont'),('c31620bd0219be0eeedfc3b0d8e0c7248127fcf574d9ef51bd',8,'2020-02-18 08:55:40','createcont'),('f0e54c4cd257d5dac68504cdb0166bff11a15db499586b8790',17,'2020-02-25 03:56:46','createcont');
+/*!40000 ALTER TABLE `tokens` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-02-28 19:56:53
