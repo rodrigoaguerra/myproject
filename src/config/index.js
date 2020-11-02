@@ -42,6 +42,7 @@ export function RequestSytem(url, data, callback) {
       }
     })
     .catch((error) => {
+      ShowSnackbar('Não foi possivel acessar o servidor!');
       console.error(error);
     });
 }

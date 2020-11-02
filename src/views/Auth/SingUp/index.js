@@ -9,7 +9,7 @@ import { RequestSytem } from 'config';
 import useStyles from '../styles';
 
 const register = (data) => {
-  RequestSytem('http://localhost/system/account/register', data);
+  RequestSytem(`${process.env.REACT_APP_HOST}/account/register`, data);
 };
 
 export default function SignUp(props) {

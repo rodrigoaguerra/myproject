@@ -15,7 +15,7 @@ export default function SingIn(props) {
   const [password, setpassword] = useState('digo123@');
 
   const login = (data) => {
-    RequestSytem('http://localhost/system/account/login', data, function (
+    RequestSytem(`${process.env.REACT_APP_HOST}/account/login`, data, function (
       response,
     ) {
       setAuthorization(response);
