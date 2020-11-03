@@ -1,10 +1,7 @@
 <?php
+require(ABSPATH . 'vendor/autoload.php');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-include_once '../../config.php';
-include_once 'PHPMailer/src/Exception.php';
-include_once 'PHPMailer/src/PHPMailer.php';
-include_once 'PHPMailer/src/SMTP.php';
 
 /**
 * Enviando email com PHPMailer

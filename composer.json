@@ -9,6 +9,7 @@
   },
   "require": {
     "respect/validation": "^2.1",
-    "fzaninotto/faker": "^1.9"
+    "fzaninotto/faker": "^1.9",
+    "phpmailer/phpmailer": "^6.1"
   }
 }

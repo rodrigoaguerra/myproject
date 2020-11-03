@@ -8,7 +8,7 @@
 
 	//caminho do servidor do sistema
 	if(!defined('BASEURL'))
-		define('BASEURL', 'dashboard/');
+		define('BASEURL', 'myproject/');
 
 	//caminho do arquivo de banco de dados
 	if(!defined('DBAPI'))

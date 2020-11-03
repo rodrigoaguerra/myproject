@@ -33,32 +33,32 @@ class Db{
 	*	$table = name of table db
 	*   $innerjoins = array(); tables
 	*   $where_field =
-	*	$where_value =
-	*	$order_by =
+	*	  $where_value =
+	*	  $order_by =
 	* 	$order_by_type = 'ASC' || 'DESC'
 	*/
   public static function select($select = null,  $table = null, $inner_joins = null, $where_field = null, $where_value = null, $order_by = null,  $order_by_type = 'ASC', $group_by = null, $limit = null){
 		try {
-	    self::connect();
+	    $database = self::connect();
 
 			$where_value = $database->real_escape_string($where_value);
 
  			if(isset($table)){
 				if(isset($select)){
-			       	$fields = null;
-				    foreach ($select as $field) {
-		          		$fields .= trim($field, "'") . ", ";
+					$fields = null;
+					foreach ($select as $field) {
+						$fields .= trim($field, "'") . ", ";
 					}
-			        $fields = substr($fields, 0, strlen($fields) - 2);
-			        $sql = "SELECT " . $fields . " FROM " . $table;
+					$fields = substr($fields, 0, strlen($fields) - 2);
+					$sql = "SELECT " . $fields . " FROM " . $table;
 				}else{
-			       	$sql = "SELECT * FROM " . $table;
-			    }
+					$sql = "SELECT * FROM " . $table;
+				}
 
 				if(isset($inner_joins)){
 					$fields = null;
 					foreach ($inner_joins as $tables => $value) {
-					    $sql .= " INNER JOIN " . trim($tables, "'") . " ON " . $value;
+					  $sql .= " INNER JOIN " . trim($tables, "'") . " ON " . $value;
 					}
 				}
 
@@ -80,9 +80,9 @@ class Db{
 
       	$sql .= ';';
 
-      	if(DEBUG){
-					error_log($sql);
-		    }
+      	// if(DEBUG){
+				// 	error_log($sql);
+		    // }
 
 		    if (!($result = $database->query($sql))) {
 					throw new Exception($database->error);
@@ -175,10 +175,6 @@ class Db{
 			}else{
 				$last_id = $database->insert_id;
 			}
-	    if(DEBUG) :
-	    	error_log($sql, 0);
-	    	error_log('Registro cadastrado com sucesso.', 0);
-	  	endif;
 	  } catch (Exception $e) {
 	    if(DEBUG) :
 	    	error_log('danger', 0);
@@ -198,7 +194,7 @@ class Db{
 	 *  Atualiza um registro em uma tabela, por ID
 	 */
 	public static function update($table = null, $field = null, $id = null, $data = null) {
-	  self::connect();
+	  $database = self::connect();
 	  $items = null;
 
 	  $id = $database->real_escape_string($id);
@@ -215,16 +211,12 @@ class Db{
 	  $sql .= " SET $items";
 	  $sql .= " WHERE ". $field . " = " . $id . ";";
 	  try {
-	  	if (!($result = $database->query($sql))) {
-    		throw new Exception($database->error);
-			}else{
-	    	if(DEBUG) :
-	    		error_log('type = success', 0);
-					error_log($sql);
-	    		error_log('Registro atualizado com sucesso.', 0);
-				endif;
+			$result = $database->query($sql);
+	  	if ($result) {
 			  self::disconnect();
 				return $result;
+			}else{
+    		throw new Exception($database->error);
 	    }
 	  } catch (Exception $e) {
 	    if(DEBUG) :
@@ -241,7 +233,7 @@ class Db{
 	 *  Remove uma linha de uma tabela pelo ID do registro
 	 */
 	public static function delete( $table = null, $field = null, $id = null ) {
-	  self::connect();
+	  $database = self::connect();
 
 	  $id = $database->real_escape_string($id);
 
@@ -249,31 +241,18 @@ class Db{
 	    if ($id) {
 	      $sql = "DELETE FROM " . $table . " WHERE " . $field . " = '" . $id ."'";
 	      $result = $database->query($sql);
-	      if ($result = $database->query($sql)) {
-					if(DEBUG) :
-						error_log('type = success', 0);
-						error_log($sql);
-						error_log('Registro Removido com Sucesso.', 0);
-					endif;
-	      } else {
-					if(DEBUG) :
-						error_log('type = error', 0);
-						error_log($sql);
-						error_log('Não foi possivel remover o item.', 0);
-					endif;
+	      if (!$database->query($sql)) {
+	    		throw new Exception($database->error);
 				}
 	    } else {
-				if(DEBUG) :
-					error_log('type = error', 0);
-					error_log('Não foi possivel remover o item.', 0);
-				endif;
+				throw new Exception('ID não definido.');
 			}
 	  } catch (Exception $e) {
-	     if(DEBUG) :
-					error_log('type = error', 0);
-					error_log($sql);
-					error_log($e->GetMessage(), 0);
-				endif;
+			if(DEBUG) :
+				error_log('type = error', 0);
+				error_log($sql);
+				error_log($e->GetMessage(), 0);
+			endif;
 	  }
 	  self::disconnect();
 	}
@@ -286,9 +265,7 @@ class Db{
 	}
 
 	public static function getLastId($table){
-		self::connect();
-		$index = $db->select(NULL, $table, NULL, NULL, NULL, 'id', 'DESC', NULL, '1');
-		self::disconnect();
+		$index = self::select(NULL, $table, NULL, NULL, NULL, 'id', 'DESC', NULL, '1');
 		return $index[0];
 	}
 }

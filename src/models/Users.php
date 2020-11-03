@@ -1,8 +1,8 @@
 <?php
-include_once('../../config.php');
+include_once(BASEURL . '/config.php');
 include_once(DBAPI);
-include_once('crypt.class.php');
-include_once('email.class.php');
+include_once(dirname(__FILE__) . '/Crypt.php');
+include_once(dirname(__FILE__) . '/Email.php');
 
 /**
 *  Class Users
@@ -173,13 +173,12 @@ class Users
 	 */
 	public static function auth($token) {
 		try {
-			$db = new Db();
-			$hasToken = $db->select(NULL, 'tokens', NULL, 'token', $token);
-			error_log($hasToken, 1);
-			return ($hasToken !== NULL) ? TRUE : FALSE;
+			$token = str_replace('Bearer ', '', $token);
+			$hasToken = Db::select(NULL, 'tokens', NULL, 'token', $token);
+			return $hasToken !== NULL;
 		} catch (Exception $e) {
 			if(DEBUG) :
-			 error_log('Error in users auth: ', $e->getMessage());
+			 error_log('Error in users auth: '. $e->getMessage());
 			endif;
 			return FALSE;
 		}
@@ -189,9 +188,8 @@ class Users
   *	login user
   **/
   public static function login($email, $password){
-	  $db = new Db();
-	  $user = $db->select(['id', 'password', 'type', 'status'],
-	  				'users', NULL, 'email', $email);
+	  $user = Db::select(['id', 'password', 'type', 'status'], 'users', NULL, 'email', $email);
+
 		//Password valid;
  		if(password_verify($password, $user['password'])) {
  			if($user['type'] !== '-1' && $user['status'] !== '-1'){

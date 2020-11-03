@@ -1,12 +1,20 @@
 <?php
-require('vendor/autoload.php');
+require(ABSPATH . 'vendor/autoload.php');
 use Respect\Validation\Validator as v;
 
 class Valid
 {
+  public static function password($password) {
+    return true;
+    // return v::alpha()->validate($password);
+  }
+
+  public static function email($email) {
+    return v::email()->validate($email);
+  }
 
   public static function customer($data) {
-    $name     = v::alnum(' ', '.')->validate($data['name']);
+    $name     = v::alpha('.', ' ')->charset('ISO-8859-1')->validate(preg_replace('/[^A-Za-z ]/', '', $data['name']));
     $birthdate = v::date('Y-m-d')->validate($data['birthdate']);
     $email    = v::email()->validate($data['email']);
     $phone    = v::digit('(', ')', ' ', '-')->validate($data['phone']);
