@@ -190,6 +190,10 @@ class Users
   public static function login($email, $password){
 	  $user = Db::select(['id', 'password', 'type', 'status'], 'users', NULL, 'email', $email);
 
+    if ($user === NULL) {
+			return json_encode(array('error' => 'Nenhum usuário encontrado'));
+    }
+
 		//Password valid;
  		if(password_verify($password, $user['password'])) {
  			if($user['type'] !== '-1' && $user['status'] !== '-1'){
