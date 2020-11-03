@@ -1,15 +1,21 @@
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteRule ^account/valid_email$ controllers/auth/valid-email.php [NC,L]
-	RewriteRule ^account/valid_user$ controllers/auth/valid_user.php [NC,L]
-	RewriteRule ^account/register$ controllers/auth/register.php [NC,L]
-	RewriteRule ^account/recover$ controllers/auth/recover.php [NC,L]
-	RewriteRule ^account/login$ controllers/auth/login.php [NC,L]
-	RewriteRule ^account/list$ controllers/auth/list.php [NC,L]
-	RewriteRule ^account/auth$ controllers/auth/auth.php [NC,L]
-	# RewriteRule ^services$ controllers/services.php [NC,L]
-	# RewriteRule ^customers$ controllers/customers.php [NC,L]
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+
+	RewriteRule ^account/valid_email$ src/controllers/auth/valid-email.php [NC,L]
+	RewriteRule ^account/valid_user$  src/controllers/auth/valid_user.php [NC,L]
+	RewriteRule ^account/register$ 	  src/controllers/auth/register.php [NC,L]
+	RewriteRule ^account/recover$ 	  src/controllers/auth/recover.php [NC,L]
+	RewriteRule ^account/login$ 		  src/controllers/auth/login.php [NC,L]
+	RewriteRule ^account/list$ 			  src/controllers/auth/list.php [NC,L]
+	RewriteRule ^account/auth$ 			  src/controllers/auth/auth.php [NC,L]
+
+	RewriteRule ^customers$			      src/controllers/customers/list.php     [NC,L]
+	RewriteRule ^customers/register$  src/controllers/customers/register.php [NC,L]
+	RewriteRule ^customers/edit$      src/controllers/customers/edit.php     [NC,L]
+	RewriteRule ^customers/remove$    src/controllers/customers/remove.php   [NC,L]
 </IfModule>
 
-php_flag log_errors on
-php_value error_log error_log.txt
+php_flag  log_errors on
+php_value error_log  /var/log/php_errors.log
