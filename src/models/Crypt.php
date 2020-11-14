@@ -18,57 +18,50 @@ class Crypt{
 
   /**
   * Make hash secret_key
-  **/
+  */
   private static function getKey(){
     return hash('sha256', self::$secret_key);
   }
 
   /**
-  * iv - encrypt method AES-256-CBC expects 16 bytes
+  * iv_encrypt - encrypt method AES-256-CBC expects 16 bytes
   * else you will get a warning
-  **/
+  */
   private static function getIv(){
     return substr(hash('sha256', self::$secret_iv), 0, 16);
   }
 
   /**
   * @param string $string: string to encrypt
-  **/
+  */
   public static function encrypt($string) {
-
     $key = self::getKey();
-    $iv = self::getIv();
+    $iv_encrypt = self::getIv();
 
-    $output = openssl_encrypt($string, self::$encrypt_method, $key, 0, $iv);
-    $output = base64_encode($output);
-
-    return $output;
+    $output = openssl_encrypt($string, self::$encrypt_method, $key, 0, $iv_encrypt);
+    return base64_encode($output);
   }
 
   /**
   * @param string $string: string to decrypt
-  **/
+  */
   public static function decrypt($string) {
-
     $key = self::getkey();
-    $iv = self::getIv();
+    $iv_encrypt = self::getIv();
 
-    $output = openssl_decrypt(base64_decode($string), self::$encrypt_method, $key, 0, $iv);
-
-    return $output;
+    return openssl_decrypt(base64_decode($string), self::$encrypt_method, $key, 0, $iv_encrypt);
   }
 
   /**
   *  Create a token of access
-  **/
+  */
   public static function createToken(){
     $bytes = openssl_random_pseudo_bytes(25, $cstrong);
     $token = bin2hex($bytes);
     if($cstrong){
       return $token;
-    }else{
-      return NULL;
     }
+    return NULL;
   }
 }
 ?>

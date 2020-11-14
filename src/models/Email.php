@@ -1,11 +1,12 @@
 <?php
-require(ABSPATH . 'vendor/autoload.php');
+declare(strict_types=1);
+require ABSPATH . 'vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 /**
 * Enviando email com PHPMailer
-**/
+*/
 class Email{
   private $mail;
 
@@ -24,7 +25,7 @@ class Email{
 			$this->mail->SMTPSecure = SMTP_SECURE;    // Enable TLS encryption, `ssl` also accepted
 			$this->mail->Port 			= SMTP_PORT;      // TCP port to connect to
 
-    } catch (Exception $e) {
+    } catch (Exception $error) {
 			//echo 'Message could not be sent.';
 			error_log('Mailer Error: ' . $this->mail->ErrorInfo);
 	    return json_encode(array('error' => 'Mailer Error: ' . $this->mail->ErrorInfo)) ;
@@ -40,7 +41,7 @@ class Email{
 	    //$this->mail->addReplyTo('contato@rodrigoalvesguerra.com.br', 'WorkSystem');
 	    //$this->mail->addCC('cc@example.com');
 	    //$this->mail->addBCC('bcc@example.com');
-	  } catch (Exception $e) {
+	  } catch (Exception $error) {
 			//echo 'Message could not be sent.';
 			error_log('Mailer Error: ' . $this->mail->ErrorInfo);
 	    return json_encode(array('error' => 'Mailer Error: ' . $this->mail->ErrorInfo)) ;
@@ -53,7 +54,7 @@ class Email{
     	$this->mail->addAttachment($file_name, $name); // Add attachments
     	//error_log($file_name);
  	    //$this->mail->addAttachment('/tmp/image.jpg', 'new.jpg');// Optional name
-	  } catch (Exception $e) {
+	  } catch (Exception $error) {
 			//echo 'Message could not be sent.';
 			error_log('Mailer Error: ' . $this->mail->ErrorInfo);
 	    return json_encode(array('error' => 'Mailer Error: ' . $this->mail->ErrorInfo)) ;
@@ -69,7 +70,7 @@ class Email{
 	    $this->mail->Body  = $content;
 
 	    $this->mail->AltBody = $altcontent;
-	  } catch (Exception $e) {
+	  } catch (Exception $error) {
 			error_log('Mailer Error: ' . $this->mail->ErrorInfo);
 	    return json_encode(array('error' => 'Mailer Error: ' . $this->mail->ErrorInfo)) ;
 	  }
@@ -79,12 +80,11 @@ class Email{
   	try{
   		$this->mail->send();
   		return json_encode(array('success' => $message));
-  	} catch (Exception $e) {
+  	} catch (Exception $error) {
 			//echo 'Message could not be sent.';
 			error_log('Mailer Error: ' . $this->mail->ErrorInfo);
     	return json_encode(array('error' => 'Mailer Error: ' . $this->mail->ErrorInfo)) ;
   	}
   }
 }
-
 ?>

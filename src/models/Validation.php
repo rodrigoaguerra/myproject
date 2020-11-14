@@ -1,5 +1,6 @@
 <?php
-require(ABSPATH . 'vendor/autoload.php');
+declare(strict_types=1);
+require ABSPATH . 'vendor/autoload.php';
 use Respect\Validation\Validator as v;
 
 class Valid

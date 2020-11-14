@@ -1,6 +1,6 @@
 <?php
-require_once('src/controllers/config.php');
-include_once('../../models/users.class.php');
+include_once 'src/controllers/config.php';
+include_once '../../models/users.class.php';
 
 if($_POST['action'] === "user_login"){
   $id = $_POST['auth-id'];

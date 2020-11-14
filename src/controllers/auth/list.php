@@ -1,6 +1,6 @@
 <?php
-include_once('../setup.php');
-include_once('./auth.php');
+include_once '../setup.php';
+include_once './auth.php';
 
 try {
   // list users on the system
@@ -11,7 +11,7 @@ try {
     throw new Exception($data['error']);
   }
 
-  echo json_encode(array('success' => 'Lista de usuários', 'data' => $data));
+  echo json_encode($data);
 } catch (Exception $error) {
   echo json_encode(array('error' => $error));
 }

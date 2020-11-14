@@ -1,10 +1,13 @@
 <?php
 declare(strict_types=1);
+//caminho do servidor do sistema
+if(!defined('BASEURL')) {
+  define('BASEURL', getcwd());
+}
 require_once 'vendor/fzaninotto/faker/src/autoload.php';
 require_once 'src/models/Customers.php';
 use PHPUnit\Framework\TestCase;
 
-// setlocale (LC_ALL, 'pt_BR');
 final class CustomersTest extends TestCase
 {
 

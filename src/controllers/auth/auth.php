@@ -1,5 +1,5 @@
 <?php
-include_once('../../models/Users.php');
+include_once '../../models/Users.php';
 $headers = getallheaders();
 try {
   if(!isset($headers['Authorization'])) {
@@ -12,7 +12,7 @@ try {
     throw new Exception('usuário não atorizado!');
   }
 } catch (Exception $error) {
-  echo json_encode(array('error' => 'usuário não atorizado!'));
-  exit();
+  echo json_encode(array('error' => $error));
+  exit;
 }
 ?>

@@ -1,13 +1,13 @@
 <?php
-  include_once('src/model/users.class.php');
-  include_once('src/model/validInputs.class.php');
+  include_once 'src/model/users.class.php';
+  include_once 'src/model/validInputs.class.php';
 
   if($_POST['action'] === 'send_valid_email'){
     unset($_POST['action']);
 
     /**
     * Deal with inputs of the user
-    **/
+    */
     // Validate email
     $_POST['email'] = ValidInputs::validEmail($_POST['email']);
 

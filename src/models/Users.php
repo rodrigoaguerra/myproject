@@ -1,95 +1,40 @@
 <?php
-include_once(BASEURL . '/config.php');
-include_once(DBAPI);
-include_once(dirname(__FILE__) . '/Crypt.php');
-include_once(dirname(__FILE__) . '/Email.php');
+declare(strict_types=1);
+include_once BASEURL . '/config.php';
+include_once DBAPI;
+include_once dirname(__FILE__) . '/Crypt.php';
+include_once dirname(__FILE__) . '/Email.php';
 
 /**
 *  Class Users
 */
 class Users
 {
-  private $user;
-
 	/**
   * LIST users from DB
-  **/
+  */
   public static function list(){
-		$db = new Db();
-
-		$users = $db->select(['id', 'firstname', 'lastname', 'email', 'status', 'type', 'date_create'],'users');
+		$users = Database::select(['id', 'firstname', 'lastname', 'email', 'status', 'type', 'date_create'], 'users');
 
 		// has users
 		if(!empty($users)){
-			return $users;
-		}else{
-			return array('error' => 'Nenhum usuário encontrado.');
+			return array('success' => 'Lista de usuários', 'users' => $users);
 		}
+
+		return array('error' => 'Nenhum usuário encontrado.');
   }
 
-	// gera token de acesso
-  private static function createToken($user_id, $action){
-  	$token = Crypt::createToken();
-		if($token != NULL){
-			$today = date_create('now', new DateTimeZone('America/Sao_Paulo'));
-	    $insert['token'] = $token;
-	    $insert['user_id'] = $user_id;
-	    $insert['datetime'] = $today->format("Y-m-d h:i:s");
-	  	$insert['action'] = $action;
-	  	$db = new Db();
-	    $db->insert('tokens', $insert);
-	    return $token;
-		}else{
-		  return NULL;
-		}
-	}
-
-  private static function sendEmailValidAcount($email_address, $user_name, $token){
-  	// Send email for the user validate your acount
-		$mail = new Email();
-		$from = "contato@rodrigoalvesguerra.com.br";
-		$name = "Rodrigo Alves Guerra";
-		$subject = "Confirmação de conta";
-		$content = "Uma conta foi criada em nosso sistema, com esse endereço de e-mail. Para ativa-la <a href=\"https://www.rodrigoalvesguerra.com.br/coleta-produtos/dashboard/account/valid_acount?cod=" .$token. "\">clique aqui</a>; Isto confirma a utilização desse endereço de e-mail pelo usuário " .$user_name. ", caso não você não tenha solicitado esse registro apenas ignore esse e-mail. Obrigado!";
-		$altcontent = $content;
-		$mail->recipients($from, $name, $email_address);
-		$mail->content($subject, $content, $altcontent);
-		$mail->send('Você recebeu um e-mail, para a confirmação de sua conta. Verifique sua caixa de entrada, e clique no link do e-mail para ativar sua conta!');
-  }
-
-  public static function send_valid_email($email){
-  	$db = new Db();
-
-		// get user for email
-		$user = $db->select(['id', 'email', 'firstname'],
-												'users', NULL, 'email', $email);
-
-    $today = date_create('now', new DateTimeZone('America/Sao_Paulo'));
-    $token = self::createToken($user['id'], 'validemail');
-		if($token != NULL){
-			self::sendEmailValidAcount($user['email'], $user['firstname'], $token);
-		}else{
-		  return array('error' => 'Problema ao criar token de acesso ao e-mail.');
-		}
-  }
-
-  /**
+	/**
   * Register user in DB
-  **/
-  public static function register(){
-  	$db = new Db();
-    $user = $_POST;
-		error_log('POST : '. print_r($user, TRUE));
+  */
+  public static function create(array $user){
+    try {
+			// check if email has already been registered.
+			$email = Database::select(['id', 'email', 'status'], 'users', NULL, 'email', $user['email']);
 
-		// check if email has already been registered.
-		$v_email = $db->select(['id', 'email', 'status'],'users',NULL,'email',$user['email']);
+			if($email !== NULL) throw new Exception('E-mail já está cadastrado no sistema.');
 
-		error_log('v_email : '. print_r($v_email, TRUE));
-		if($v_email === NULL){
-			$options = [
-	    	'cost' => 11,
-	    	'salt' => random_bytes(22)
-			];
+			$options = ['cost' => 11, 'salt' => random_bytes(22)];
 
 			$user['password'] = password_hash($user['password'], PASSWORD_BCRYPT, $options);
 
@@ -99,189 +44,279 @@ class Users
 	    $user['type'] = -1;
 	    $user['status'] = -1;
 
-	    $user_id = $db->insert('users', $user);
-	    $token = self::createToken($user_id, 'createcont');
-			if($token != NULL){
-				// error_log('Send Mail...');
-				self::sendEmailValidAcount($user['email'], $user['firstname'], $token);
-			  return array('success' => 'Usuário registrado, por favor valide seu e-mail.');
-			}else{
-				// error_log('Token Error...');
-			  return array('error' => 'Problema ao criar token de acesso ao e-mail.');
-			}
-	  }else{
-			// error_log('Email ja cadastrado ...');
-	  	return array('error' => 'Esse e-mail já está cadastrado no sistema.', 'email' => $v_email['email'], 'status' => $v_email['status']);
-	  }
+	    Database::insert('users', $user);
+
+			self::sendEmailValidAccount($user['email']);
+			return array('success' => 'Usuário registrado, por favor valide seu e-mail.');
+		} catch (Exception $error) {
+		  return array('error' => $error->getMessage());
+		}
   }
 
   /**
-  *	Valid email from user
-  **/
-  public static function validEmail($token){
-  	$db = new Db();
-	  $user = $db->select(NULL, 'users', array('tokens' => 'tokens.user_id = users.id' ), 'token', $token);
-
-		if(!empty($user)){
-
-	  	$date = date_create('now', new DateTimeZone('America/Sao_Paulo'));
-		  $date = $date->format("Y-m-d h:i:s");
-
-	 		$date_valid = $user['datetime'] . ' +6 hour';
-	 		$date_valid = date('Y-m-d H:i:s', strtotime($date_valid));
-	 		if($date <= $date_valid && ($user['action'] === 'createcont' || $user['action'] === 'validemail')){
-			  $db->update('users', 'id', $user['id'], array('status' => 0));
-		    $db->delete('tokens', 'token', $token);
-	 			return $user['email'];//valid
-	 		}else{
-	 			if(DEBUG){
-					error_log('date: '. $date);
-					error_log('date_valid: '. $date_valid);
-					error_log('token: '. $token .' - expirado.');
-		    }
-		    $db->delete('tokens', 'token', $token);
-	 			return NULL; //token expirado
-	 		}
-		}else{
- 			if(DEBUG){
-				error_log('token:'. $token .' - usuário não encontrado.');
-	    }
-	    $db->delete('tokens', 'token', $token);
-	 		return NULL; //invalid
-	 	}
-	}
-
-	/**
-	 * Valid users from system
-	 */
-	public static function validUser($id, $type) {
+  *	login user
+  */
+  public static function login(string $email, string $password) {
 		try {
-			$db = new Db();
-			$db->update('users', 'id', $id, array('status' => 1, 'type' => $type));
-			$user = $db->select(NULL, 'users', NULL, 'id', $id);
-			return TRUE;
-		} catch (Exception $e) {
-			if(DEBUG) :
-			 error_log('Error in users auth: ', $e->getMessage());
-			endif;
-			return FALSE;
+			// seleciona usuário
+	  	$user = Database::select(['id', 'password', 'type', 'status'], 'users', NULL, 'email', $email);
+
+			// usuário não encontrado
+			if($user === NULL) throw new Exception('Nenhum usuário encontrado');
+
+			// senha incorreta
+ 			if(!password_verify($password, $user['password'])){
+				throw new Exception('Error ao executar o login, verifique seu e-mail e senha.');
+			}
+
+			// usuário não validado
+			if($user['type'] === '-1' || $user['status'] === '-1' ) {
+				throw new Exception('O e-mail do usuário não foi validado ainda, acesse seu email e clique no link para  ativar sua conta.');
+			}
+
+			$token = self::createToken($user['id'], 'login');
+
+			if(!$token) {
+				throw new Exception("Error ao criar token");
+			}
+
+			return array('success' => 'usuário autorizado', 'token' => $token, 'user' => $user);
+		} catch (Exception $error) {
+			error_log('Error in users login: '. $error->getMessage());
+			return array('error' => $error->getMessage());
 		}
 	}
 
 	/**
-	 * Auth user
-	 */
-	public static function auth($token) {
+	* logout user
+	*/
+	public static function logout(string $token){
+		$token = str_replace('Bearer ', '', $token);
+	  Database::delete('tokens', 'token', $token);
+		return array('success' => true);
+	}
+
+	/**
+ 	* Auth user
+ 	*/
+	public static function auth(string $token) {
 		try {
 			$token = str_replace('Bearer ', '', $token);
-			$hasToken = Db::select(NULL, 'tokens', NULL, 'token', $token);
+			$hasToken = Database::select(NULL, 'tokens', NULL, 'token', $token);
 			return $hasToken !== NULL;
-		} catch (Exception $e) {
-			if(DEBUG) :
-			 error_log('Error in users auth: '. $e->getMessage());
-			endif;
+		} catch (Exception $error) {
+			if(DEBUG) {
+			 error_log('Error in users auth: '. $error->getMessage());
+			}
 			return FALSE;
 		}
 	}
 
   /**
-  *	login user
-  **/
-  public static function login($email, $password){
-	  $user = Db::select(['id', 'password', 'type', 'status'], 'users', NULL, 'email', $email);
+  *	Valid email from user
+  */
+  public static function validAccount(string $token){
+	 	try {
+			$user = Database::select(NULL, 'users', array('tokens' => 'tokens.user_id = users.id' ), 'token', $token);
 
-    if ($user === NULL) {
-			return json_encode(array('error' => 'Nenhum usuário encontrado'));
-    }
+			if(empty($user)) throw new Exception("${token} - usuário não encontrado.");
 
-		//Password valid;
- 		if(password_verify($password, $user['password'])) {
- 			if($user['type'] !== '-1' && $user['status'] !== '-1'){
-				$token = self::createToken($user['id'], 'login');
-				session_start();
-				$_SESSION['token'] = $token;
-				$_SESSION['login'] = 1;
-				$_SESSION['user_type'] = intval($user['type']);
-				$_SESSION['user_status'] = $user['status'];
-				// session_abort(); não executa login
-				return json_encode(array('success' => 'autorizado', 'data' => $token));
+			$date = date_create('now', new DateTimeZone('America/Sao_Paulo'));
+		  $date = $date->format("Y-m-d h:i:s");
+	 		$date_valid = $user['datetime'] . ' +6 hour';
+	 		$date_valid = date('Y-m-d H:i:s', strtotime($date_valid));
+
+			$actions = array('createcont', 'validemail');
+
+			if (!in_array($user['action'], $actions)) throw new Exception("${token} - ação é inválida.");
+
+			if($date >= $date_valid) throw new Exception("${token} - expirado.", 1);
+
+			Database::update('users', 'id', $user['id'], array('status' => 0));
+		  Database::delete('tokens', 'token', $token);
+
+			return $user['email'];
+
+		} catch (Exception $error) {
+			if(DEBUG) {
+			 error_log('Error in users token: '. $error->getMessage());
 			}
-			return json_encode(array('error' => 'O e-mail do usuário não foi validado ainda, acesse seu email e clique no link para  ativar sua conta.'));
-		}else{
-		  //Password invalid;
-		  return json_encode(array('error' => 'Error ao executar o login, verifique seu e-mail e senha.'));
+	    Database::delete('tokens', 'token', $token);
+			return array('error' => $error->getMessage());
+		}
+	}
+
+	/**
+	 * Enable user from system
+	 */
+	public static function enable(string $id) {
+		try {
+			Database::update('users', 'id', $id, array('status' => 1));
+			return TRUE;
+		} catch (Exception $error) {
+			if(DEBUG) {
+			 error_log('Error in users auth: ', $error->getMessage());
+			}
+			return FALSE;
+		}
+	}
+
+	/**
+	 * Disable user from system
+	 */
+	public static function disable(string $id) {
+		try {
+			Database::update('users', 'id', $id, array('status' => 0));
+			return TRUE;
+		} catch (Exception $error) {
+			if(DEBUG) {
+			 error_log('Error in users auth: ', $error->getMessage());
+			}
+			return FALSE;
+		}
+	}
+
+	/**
+	 * Change Type
+	 */
+	public static function changeType(string $id, $type){
+		try {
+			Database::update('users', 'id', $id, array('type' => $type));
+			return TRUE;
+		} catch (Exception $error) {
+			if(DEBUG) {
+			 error_log('Error in users auth: ', $error->getMessage());
+			}
+			return FALSE;
 		}
 	}
 
 	/**
   *	reset password users
-  **/
-  public static function requireRecoverPassword($email){
-	  $db = new Db();
+  */
+  public static function requireRecoverPassword(string $email){
+		try {
+			// check if email has already been registered.
+			$user = Database::select(['id', 'firstname', 'lastname', 'email'], 'users', NULL, 'email', $email);
 
-		// check if email has already been registered.
-		$user = $db->select(['id', 'firstname', 'lastname', 'email'],'users',NULL,'email', $email);
-
-		if($user !== NULL){
-			$name = $user['firstname'] . ' ' . $user['lastname'];
+			// usuário não encontrado
+			if($user === NULL) throw new Exception('Nenhum usuário encontrado');
 
 			$token = self::createToken($user['id'], 'recovepass');
-			if($token != NULL){
-				return array('name'=> $name, 'hash' => $token);
-			}else{
-			  return array('error' => 'Problema ao criar token de acesso ao e-mail.');
-			}
-		}else{
-	  	return array('error' => 'Esse e-mail não está cadastrado no sistema.');
-	  }
+
+			// token não foi criado
+			if(!$token) throw new Exception('Problema ao criar token de acesso ao e-mail.');
+
+			self::sendEmailRecoverPassword($user['email']);
+
+			return array('success' => 'Recuperação de senha solicitada, verifique seu e-mail.');
+		} catch (Exception $error) {
+			return array('error' => $error->getMessage());
+		}
 	}
 
 	// valid user token
-	public static function recoverPassword($token, $password){
-		$db = new Db();
-	  $user = $db->select(NULL, 'users', array('tokens' => 'tokens.user_id = users.id' ), 'token', $token);
-		if(!empty($user)){
-		 	$date = date_create('now', new DateTimeZone('America/Sao_Paulo'));
-		  $date = $date->format("Y-m-d h:i:s");
+	public static function recoverPassword(string $token, string $password){
+		try {
+	  	$user = Database::select(NULL, 'users', array('tokens' => 'tokens.user_id = users.id' ), 'token', $token);
 
+			if(empty($user)) throw new Exception("Usuário não encontrado!");
+
+			$date = date_create('now', new DateTimeZone('America/Sao_Paulo'));
+		  $date = $date->format("Y-m-d h:i:s");
 	 		$date_valid = $user['datetime'] . ' +6 hour';
 	 		$date_valid = date('Y-m-d H:i:s', strtotime($date_valid));
-	 		if($date <= $date_valid && ($user['action'] === 'recovepass')){
-				$options = [
-						'cost' => 11,
-						'salt' => random_bytes(22)
-					];
 
-				$newPassword = password_hash($password, PASSWORD_BCRYPT, $options);
-				$db->update('users', 'id', $user['id'], array('password' => $newPassword));
-		    $db->delete('tokens', 'token', $token);
-				return $user['email']; //valid
-	 		}else{
-	 			if(DEBUG){
-					error_log('date: '. $date);
-					error_log('date_valid: '. $date_valid);
-					error_log('token: '. $token .' - expirado.');
-		    }
-		    $db->delete('tokens', 'token', $token);
-	 			return NULL; //token expirado
-	 		}
-		}else{
- 			if(DEBUG){
-				error_log('token:'. $token .' - usuário não encontrado.');
-	    }
-	    $db->delete('tokens', 'token', $token);
-	 		return NULL; //invalid
-	 	}
+			if ($date >= $date_valid){
+				throw new Exception("Essse token foi expirado!");
+			}
+
+			if ($user['action'] === 'recovepass'){
+				throw new Exception("Ação do token é inválida!");
+			}
+
+			$options = ['cost' => 11, 'salt' => random_bytes(22)];
+
+			$newPassword = password_hash($password, PASSWORD_BCRYPT, $options);
+
+			Database::update('users', 'id', $user['id'], array('password' => $newPassword));
+			Database::delete('tokens', 'token', $token);
+
+			return array('success' => 'Sua senha foi redefinida com sucesso.');
+		} catch (Exception $error) {
+			if (DEBUG) {
+				error_log("Recover passoword: ". $error->getMessage());
+			}
+			Database::delete('tokens', 'token', $token);
+			return array('error' => $error->getMessage());
+		}
 	}
 
-	/**
-	* logout user
-	**/
-	public static function logout(){
-		session_start();
-		session_unset();
-		session_destroy();
-		error_log('Logout finish !');
-		return json_encode(array('success' => 'dashboard.php'));
+	// gera token de acesso
+  private static function createToken($user_id, $action){
+		try {
+  		$token = Crypt::createToken();
+			if($token === NULL) {
+				throw new Exception("Erro ao criar token", 1);
+			}
+			$today = date_create('now', new DateTimeZone('America/Sao_Paulo'));
+	    $insert['token'] = $token;
+	    $insert['user_id'] = $user_id;
+	    $insert['datetime'] = $today->format("Y-m-d h:i:s");
+	  	$insert['action'] = $action;
+	    Database::insert('tokens', $insert);
+	    return $token;
+		} catch (Exception $error) {
+		  return FALSE;
+		}
+	}
+
+  public static function sendEmailValidAccount(string $email){
+		try {
+			$user = Database::select(['id', 'email', 'firstname'], 'users', NULL, 'email', $email);
+			$token = self::createToken($user['id'], 'validemail');
+			if(!$token){
+				throw new Exception('Problema ao criar token de acesso ao e-mail.', 1);
+			}
+			['email' => $user_email, 'firstname' => $user_name ] = $user;
+
+			// Send email for the user validate your acount
+			$mail = new Email();
+			$from = "contato@rodrigoalvesguerra.com.br";
+			$name = "Rodrigo Alves Guerra";
+			$subject = "Confirmação de conta";
+			$content = "Uma conta foi criada em nosso sistema, com esse endereço de e-mail. Para ativa-la <a href=\"".SYSTEM_URL."/account/valid_acount?cod=${token}\">clique aqui</a>; Isto confirma a utilização desse endereço de e-mail pelo usuário ${user_name}, caso não você não tenha solicitado esse registro apenas ignore esse e-mail. Obrigado!";
+			$altcontent = $content;
+			$mail->recipients($from, $name, $user_email);
+			$mail->content($subject, $content, $altcontent);
+			$mail->send('Você recebeu um e-mail, para a confirmação de sua conta. Verifique sua caixa de entrada, e clique no link do e-mail para ativar sua conta!');
+		} catch (Exception $error) {
+		  return array('error' => $error->getMessage());
+		}
+  }
+
+	public static function sendEmailRecoverPassword(string $email){
+		try {
+			$user = Database::select(['id', 'email', 'firstname'], 'users', NULL, 'email', $email);
+			$token = self::createToken($user['id'], 'recoverpass');
+			if(!$token){
+				throw new Exception('Problema ao criar token de acesso ao e-mail.', 1);
+			}
+
+			['email' => $user_email, 'firstname' => $user_name ] = $user;
+
+			// Send email for the user validate your acount
+			$mail = new Email();
+			$from = "contato@rodrigoalvesguerra.com.br";
+			$name = "Rodrigo Alves Guerra";
+			$subject = "Recuperação de senha";
+			$content = "Olá ${user_name}, uma solicitação de recuparação de senha, foi feita no sistema. Para alterar sua senha <a href=\"".SYSTEM_URL."/account/recover?cod=${token}\">clique aqui</a>, caso não você não tenha solicitado esse registro apenas ignore esse e-mail. Obrigado!";
+			$altcontent = $content;
+			$mail->recipients($from, $name, $user_email);
+			$mail->content($subject, $content, $altcontent);
+			$mail->send('Você recebeu um e-mail, para a confirmação de sua conta. Verifique sua caixa de entrada, e clique no link do e-mail para ativar sua conta!');
+		} catch (Exception $error) {
+		  return array('error' => $error->getMessage());
+		}
 	}
 }

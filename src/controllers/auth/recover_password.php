@@ -1,13 +1,13 @@
 <?php
-  include_once('src/model/users.class.php');
-  include_once('src/model/email.class.php');
-  include_once('src/model/validInputs.class.php');
+  include_once 'src/model/users.class.php';
+  include_once 'src/model/email.class.php';
+  include_once 'src/model/validInputs.class.php';
 
-  if($_POST['action'] === 'recover_password' && $_POST['token'] != ''){
+  if($_POST['action'] === 'recover_password' && $_POST['token'] !== ''){
   	unset($_POST['action']);
   	/**
   	* Deal with inputs of the user
-  	**/
+  	*/
   	// Validate email
   	$valid = ValidInputs::validPassword($_POST['password']);
     $valid = ValidInputs::validToken($_POST['token']);

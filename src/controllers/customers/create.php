@@ -1,6 +1,6 @@
 <?php
-require('vendor/autoload.php');
-require('src/config.php')
+require 'vendor/autoload.php';
+require 'src/config.php';
 
 // $name = "John Doe";
 

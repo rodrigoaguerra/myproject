@@ -1,13 +1,13 @@
 <?php
-	require_once('src/controllers/config.php');
-	include_once('../../models/users.class.php');
-	include_once('../../models/validInputs.class.php');
+	include_once 'src/controllers/config.php';
+	include_once '../../models/users.class.php';
+	include_once '../../models/validInputs.class.php';
 
   if($_POST['action'] === 'user_register'){
   	unset($_POST['action']);
-  	/**
+  	/*
   	* Deal with inputs of the user
-  	**/
+  	*/
   	// Validate firstName
   	$_POST['firstname'] = ValidInputs::validInput($_POST['firstname'], 'firstname', 25, "/[A-záàâãéèêíïóôõöúçñ]/");
   	if(isset($_POST['firstname']['error'])){
