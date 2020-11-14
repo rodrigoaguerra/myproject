@@ -26,11 +26,11 @@ const useStyles = makeStyles((theme) => ({
 
 // list user
 const listUsers = (setUsers) => {
-  const data = { data: 'asdas' };
+  const data = {};
   RequestSytem(`${process.env.REACT_APP_HOST}/account/list`, data, function (
-    users,
+    response,
   ) {
-    console.log('users', users);
+    const { users } = response;
     const list = users.map((user) =>
       createData(
         user.id,

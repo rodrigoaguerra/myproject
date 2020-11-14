@@ -18,7 +18,7 @@ export default function SingIn(props) {
     RequestSytem(`${process.env.REACT_APP_HOST}/account/login`, data, function (
       response,
     ) {
-      setAuthorization(response);
+      setAuthorization(response.token);
       props.changeView('dashboard');
     });
   };

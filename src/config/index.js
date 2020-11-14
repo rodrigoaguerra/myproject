@@ -1,12 +1,17 @@
 import { ShowSnackbar } from 'common';
+
 const headers = {
   // Accept: 'application/json',
   // 'Content-Type': 'application/json',
 };
 
 export function setAuthorization(token) {
-  headers.Authorization = 'Bearer ' + token;
-  // headers['Access-Control-Allow-Headers'] = 'http://localhost';
+  try {
+    if (!token) throw new Error('Erro ao configurar token.');
+    headers.Authorization = 'Bearer ' + token;
+  } catch (error) {
+    ShowSnackbar(error);
+  }
 }
 
 export function getAuthorization() {
@@ -31,8 +36,8 @@ export function RequestSytem(url, data, callback) {
     .then((response) => {
       if (response.success) {
         ShowSnackbar(response.success);
-        if (callback && response.data) {
-          callback(response.data);
+        if (callback && response) {
+          callback(response);
         }
       } else if (response.error) {
         ShowSnackbar(response?.error);
