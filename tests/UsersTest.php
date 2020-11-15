@@ -30,9 +30,9 @@ final class UsersTest extends TestCase
 		// get user id
 		['id' => $user_id ] = Database::select(['id'], 'users', NULL, 'email', $user['email']);
 		// get token valid email
-		['token' => $token] = Database::select(['token'], 'tokens', NULL, 'user_id', $user_id);
-		$res = Users::validAccount($token);
-		$this->assertEquals($user['email'], $res);
+    ['token' => $token] = Database::select(['token'], 'tokens', NULL, 'user_id', $user_id);
+    $res = Users::validAccount($token);
+		$this->assertEquals($user['email'], $res['success']);
 	}
 
   public function testLogin() {

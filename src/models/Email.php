@@ -76,14 +76,14 @@ class Email{
 	  }
   }
 
-  public function send($message){
+  public function send(string $message): array{
   	try{
   		$this->mail->send();
-  		return json_encode(array('success' => $message));
+  		return array('success' => $message);
   	} catch (Exception $error) {
 			//echo 'Message could not be sent.';
 			error_log('Mailer Error: ' . $this->mail->ErrorInfo);
-    	return json_encode(array('error' => 'Mailer Error: ' . $this->mail->ErrorInfo)) ;
+    	return array('error' => 'Mailer Error: ' . $this->mail->ErrorInfo);
   	}
   }
 }
